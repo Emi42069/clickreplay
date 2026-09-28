@@ -15,6 +15,8 @@
 
 namespace {
 void draw_hotkey(const char* label, bool& enabled, int& key, bool& capture) {
+    ImGui::PushID(label);
+
     ImGui::Text("%s", label);
     ImGui::SameLine(220);
 
@@ -39,6 +41,8 @@ void draw_hotkey(const char* label, bool& enabled, int& key, bool& capture) {
         ImGui::SameLine();
         ImGui::TextDisabled("Waiting...");
     }
+
+    ImGui::PopID();
 }
 }
 
