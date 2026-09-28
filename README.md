@@ -13,3 +13,34 @@ be free.
 - "Statistics" stores interval/CPS history and logs.
 - "gui/*" contains the Dear ImGui pages and DirectX 11 setup.
 The replay engine does not include or reference "AppState". When "start()" is called, it copies the supplied "ReplayConfig". The GUI reads replay state through "ReplayEngine::snapshot()" rather than accessing individual runtime fields.
+
+## License
+
+Copyright (c) 2026 Emi.
+
+This project is released under the **Click Replay GUI Non-Commercial Source
+License 1.0**. You may use, modify, and redistribute the project for
+non-commercial purposes, including free redistribution of modified versions.
+Selling the software, licensing it for payment, bundling it into a paid
+product or service, or other commercial use requires prior written permission
+from the copyright holder.
+
+See [`LICENSE`](LICENSE) for the complete terms.
+
+**Important:** this is a custom source-available, non-commercial license. It is
+not an OSI-approved Open Source license.
+
+## Third-party software
+
+This project uses [Dear ImGui](https://github.com/ocornut/imgui), which is
+licensed under the MIT License. Dear ImGui is fetched by CMake at configure
+time rather than vendored in this repository.
+
+Third-party software remains subject to its own license terms. This project’s
+non-commercial license does not change the license of any third-party
+component.
+
+## Status
+
+This is a Windows desktop project. The repository is intended to remain small
+and straightforward rather than provide a general-purpose replay framework.
