@@ -14,13 +14,25 @@
 #include <string>
 
 namespace {
-void draw_hotkey(const char* label, int& key, bool& capture) {
+void draw_hotkey(const char* label, bool& enabled, int& key, bool& capture) {
     ImGui::Text("%s", label);
     ImGui::SameLine(220);
 
-    const std::string button_text = capture ? "Press a key..." : Input::key_name(key);
-    if (ImGui::Button(button_text.c_str(), ImVec2(170, 0))) {
-        capture = true;
+    if (!enabled) {
+        ImGui::BeginDisabled();
+        ImGui::Button("Disabled", ImVec2(170, 0));
+        ImGui::EndDisabled();
+    } else {
+        const std::string button_text = capture ? "Press a key..." : Input::key_name(key);
+        if (ImGui::Button(button_text.c_str(), ImVec2(170, 0))) {
+            capture = true;
+        }
+    }
+
+    ImGui::SameLine();
+    if (ImGui::SmallButton(enabled ? "X" : "Enable")) {
+        enabled = !enabled;
+        capture = false;
     }
 
     if (capture) {
@@ -31,8 +43,9 @@ void draw_hotkey(const char* label, int& key, bool& capture) {
 }
 
 void draw_settings_page(AppState& app,
-                      bool& capture_toggle_hotkey,
-                      bool& capture_inventory_hotkey) {
+                         bool& capture_toggle_hotkey,
+                         bool& capture_inventory_hotkey,
+                         bool& capture_recording_hotkey) {
     const ReplaySnapshot replay = app.replay.snapshot();
     const bool running = replay.status != ReplayStatus::stopped;
 
@@ -68,16 +81,18 @@ void draw_settings_page(AppState& app,
     ImGui::Spacing();
     ImGui::Text("Hotkeys");
     ImGui::TextDisabled("Click a button, then press the key you want to assign.");
-    draw_hotkey("Replay toggle", app.config.toggle_key, capture_toggle_hotkey);
-    draw_hotkey("Inventory pause", app.config.inventory_key, capture_inventory_hotkey);
+    draw_hotkey("Replay toggle", app.config.toggle_hotkey_enabled, app.config.toggle_key, capture_toggle_hotkey);
+    draw_hotkey("Inventory pause", app.config.inventory_hotkey_enabled, app.config.inventory_key, capture_inventory_hotkey);
+    draw_hotkey("Recording toggle", app.recording_config.toggle_hotkey_enabled, app.recording_config.toggle_key, capture_recording_hotkey);
 
     if (running) {
         ImGui::EndDisabled();
     }
 
     ImGui::Spacing();
-    ImGui::TextDisabled("Replay toggle: %s", Input::key_name(app.config.toggle_key));
-    ImGui::TextDisabled("Inventory pause: %s", Input::key_name(app.config.inventory_key));
+    ImGui::TextDisabled("Replay toggle: %s", app.config.toggle_hotkey_enabled ? Input::key_name(app.config.toggle_key) : "Disabled");
+    ImGui::TextDisabled("Inventory pause: %s", app.config.inventory_hotkey_enabled ? Input::key_name(app.config.inventory_key) : "Disabled");
+    ImGui::TextDisabled("Recording toggle: %s", app.recording_config.toggle_hotkey_enabled ? Input::key_name(app.recording_config.toggle_key) : "Disabled");
     ImGui::TextDisabled("Hold the left mouse button to generate clicks.");
     ImGui::TextDisabled("Clicks are sent only when javaw.exe is the foreground window.");
 

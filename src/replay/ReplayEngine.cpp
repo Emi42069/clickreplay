@@ -120,6 +120,12 @@ double ReplayEngine::target_cps(std::size_t index) const {
 }
 
 bool ReplayEngine::toggle_inventory(bool& was_down, bool& inventory_open) {
+    if (!config_.inventory_hotkey_enabled) {
+        was_down = false;
+        inventory_open = false;
+        return false;
+    }
+
     const bool down = input_.key_down(config_.inventory_key);
 
     if (down && !was_down) {
@@ -135,7 +141,8 @@ bool ReplayEngine::wait_until(TimePoint deadline,
                               bool& inventory_was_down,
                               bool& inventory_open) {
     while (!stop_requested_) {
-        if (input_.key_just_pressed(config_.toggle_key, toggle_was_down)) {
+        if (config_.toggle_hotkey_enabled &&
+            input_.key_just_pressed(config_.toggle_key, toggle_was_down)) {
             bool armed;
             {
                 std::lock_guard<std::mutex> lock(state_mutex_);
@@ -244,7 +251,8 @@ void ReplayEngine::worker() {
             statistics_.log(message.str());
         }
 
-        if (input_.key_just_pressed(config_.toggle_key, toggle_was_down)) {
+        if (config_.toggle_hotkey_enabled &&
+            input_.key_just_pressed(config_.toggle_key, toggle_was_down)) {
             bool armed;
             {
                 std::lock_guard<std::mutex> lock(state_mutex_);

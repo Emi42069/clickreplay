@@ -15,6 +15,9 @@
 class Dataset {
 public:
     bool load_csv(const std::string& path, std::string& error);
+    bool save_csv(const std::string& path, std::string& error) const;
+    void clear();
+    void append_interval(long interval);
 
     bool empty() const;
     std::size_t size() const;

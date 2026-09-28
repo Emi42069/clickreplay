@@ -11,6 +11,8 @@
 #include <windows.h>
 
 #include <atomic>
+#include <functional>
+#include <mutex>
 
 class Input {
 public:
@@ -24,6 +26,8 @@ public:
     bool key_down(int vk) const;
     bool key_just_pressed(int vk, bool& was_down) const;
 
+    void set_mouse_down_callback(std::function<void()> callback);
+
     static const char* key_name(int vk);
 
 private:
@@ -31,4 +35,7 @@ private:
 
     std::atomic<bool> left_button_down_{false};
     HHOOK mouse_hook_ = nullptr;
+
+    mutable std::mutex callback_mutex_;
+    std::function<void()> mouse_down_callback_;
 };

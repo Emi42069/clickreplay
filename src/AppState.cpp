@@ -11,14 +11,21 @@
 #include <sstream>
 
 AppState::AppState()
-    : replay(dataset, input, platform, statistics) {
+    : replay(dataset, input, platform, statistics),
+      recorder(dataset, input, statistics) {
 }
 
 AppState::~AppState() {
+    recorder.stop();
     replay.stop();
 }
 
 bool AppState::load_dataset() {
+    if (recorder.snapshot().status == RecordingStatus::recording) {
+        statistics.log("Stop recording before loading a dataset.");
+        return false;
+    }
+
     if (csv_path.empty()) {
         statistics.log("Select a CSV file first.");
         return false;

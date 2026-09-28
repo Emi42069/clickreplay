@@ -76,6 +76,54 @@ bool Dataset::load_csv(const std::string& path, std::string& error) {
     return true;
 }
 
+bool Dataset::save_csv(const std::string& path, std::string& error) const {
+    const std::vector<long> intervals = values();
+    if (intervals.empty()) {
+        error = "The dataset is empty.";
+        return false;
+    }
+
+    std::ofstream file(path);
+    if (!file) {
+        error = "Failed to create file: " + path;
+        return false;
+    }
+
+    file << "index,timestamp_ms,interval_ms\n";
+
+    long long timestamp = 0;
+    for (std::size_t i = 0; i < intervals.size(); ++i) {
+        if (i > 0) {
+            timestamp += intervals[i - 1];
+        }
+
+        file << i << ',' << timestamp << ',' << intervals[i] << '\n';
+    }
+
+    if (!file) {
+        error = "Failed while writing file: " + path;
+        return false;
+    }
+
+    error.clear();
+    return true;
+}
+
+void Dataset::clear() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    intervals_.clear();
+    seed_ = 0;
+}
+
+void Dataset::append_interval(long interval) {
+    if (interval <= 0) {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(mutex_);
+    intervals_.push_back(interval);
+}
+
 bool Dataset::empty() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return intervals_.empty();

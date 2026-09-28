@@ -41,7 +41,8 @@ void choose_csv(AppState& app) {
 
 void draw_dataset_page(AppState& app) {
     const ReplaySnapshot replay = app.replay.snapshot();
-    const bool running = replay.status != ReplayStatus::stopped;
+    const bool recording = app.recorder.snapshot().status == RecordingStatus::recording;
+    const bool running = replay.status != ReplayStatus::stopped || recording;
 
     ImGui::Text("Dataset");
     ImGui::SameLine();

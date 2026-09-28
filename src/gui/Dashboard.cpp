@@ -67,6 +67,7 @@ void draw_next_click(const ReplaySnapshot& replay) {
 void draw_dashboard(AppState& app) {
     const ReplaySnapshot replay = app.replay.snapshot();
     const bool running = replay.status != ReplayStatus::stopped;
+    const bool recording = app.recorder.snapshot().status == RecordingStatus::recording;
     const std::size_t total = replay.dataset_size;
 
     ImGui::Text("Dashboard");
@@ -128,6 +129,10 @@ void draw_dashboard(AppState& app) {
 
     ImGui::Spacing();
     const char* button_label = running ? "STOP REPLAY" : "START REPLAY";
+    if (recording) {
+        ImGui::BeginDisabled();
+    }
+
     if (ImGui::Button(button_label, ImVec2(180, 42))) {
         if (running) {
             app.replay.stop();
@@ -136,7 +141,15 @@ void draw_dashboard(AppState& app) {
         }
     }
 
+    if (recording) {
+        ImGui::EndDisabled();
+    }
+
     ImGui::SameLine();
-    ImGui::TextDisabled("Toggle: %s | Hold LEFT mouse button | Target: javaw.exe",
-                       Input::key_name(app.config.toggle_key));
+    if (recording) {
+        ImGui::TextDisabled("Stop recording before starting replay.");
+    } else {
+        ImGui::TextDisabled("Toggle: %s | Hold LEFT mouse button | Target: javaw.exe",
+                           app.config.toggle_hotkey_enabled ? Input::key_name(app.config.toggle_key) : "Disabled");
+    }
 }

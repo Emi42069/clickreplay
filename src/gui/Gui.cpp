@@ -12,6 +12,7 @@
 #include "../input/Input.h"
 #include "Dashboard.h"
 #include "DatasetPage.h"
+#include "RecorderPage.h"
 #include "AnalyticsPage.h"
 #include "SettingsPage.h"
 #include "LogsPage.h"
@@ -104,6 +105,7 @@ bool Gui::initialize(HINSTANCE instance, AppState& app) {
     app.statistics.log("Select a CSV dataset, then press START REPLAY.");
     app.statistics.log("Default replay toggle: F6.");
     app.statistics.log("Default inventory pause: R.");
+    app.statistics.log("Default recording toggle: F7.");
     app.statistics.log("Timing: absolute deadlines / DOWN-to-DOWN.");
 
     return true;
@@ -120,6 +122,21 @@ int Gui::run() {
 
             if (message.message == WM_QUIT) {
                 quit = true;
+            }
+        }
+
+        if (app_ && app_->recording_config.toggle_hotkey_enabled && !capture_recording_hotkey_ &&
+            app_->input.key_just_pressed(app_->recording_config.toggle_key,
+                                         recording_toggle_was_down_)) {
+            const bool replay_running =
+                app_->replay.snapshot().status != ReplayStatus::stopped;
+
+            if (replay_running) {
+                app_->statistics.log("Stop the replay before starting a recording.");
+            } else if (app_->recorder.snapshot().status == RecordingStatus::recording) {
+                app_->recorder.stop();
+            } else {
+                app_->recorder.start();
             }
         }
 
@@ -324,6 +341,7 @@ void Gui::render() {
 
     draw_navigation_button("Dashboard", Page::Dashboard);
     draw_navigation_button("Dataset", Page::Dataset);
+    draw_navigation_button("Recorder", Page::Recorder);
     draw_navigation_button("Analytics", Page::Analytics);
     draw_navigation_button("Settings", Page::Settings);
     draw_navigation_button("Logs", Page::Logs);
@@ -344,11 +362,14 @@ void Gui::render() {
     case Page::Dataset:
         draw_dataset_page(*app_);
         break;
+    case Page::Recorder:
+        draw_recorder_page(*app_);
+        break;
     case Page::Analytics:
         draw_analytics_page(*app_);
         break;
     case Page::Settings:
-        draw_settings_page(*app_, capture_toggle_hotkey_, capture_inventory_hotkey_);
+        draw_settings_page(*app_, capture_toggle_hotkey_, capture_inventory_hotkey_, capture_recording_hotkey_);
         break;
     case Page::Logs:
         draw_logs_page(*app_);
@@ -366,6 +387,7 @@ LRESULT WINAPI Gui::wnd_proc(HWND hwnd,
     if (g_gui && g_gui->app_ &&
         (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)) {
         if (g_gui->capture_toggle_hotkey_) {
+            g_gui->app_->config.toggle_hotkey_enabled = true;
             g_gui->app_->config.toggle_key = static_cast<int>(w_param);
             g_gui->capture_toggle_hotkey_ = false;
             g_gui->app_->statistics.log(
@@ -375,10 +397,22 @@ LRESULT WINAPI Gui::wnd_proc(HWND hwnd,
         }
 
         if (g_gui->capture_inventory_hotkey_) {
+            g_gui->app_->config.inventory_hotkey_enabled = true;
             g_gui->app_->config.inventory_key = static_cast<int>(w_param);
             g_gui->capture_inventory_hotkey_ = false;
             g_gui->app_->statistics.log(
                 std::string("Inventory pause hotkey set to ") +
+                Input::key_name(static_cast<int>(w_param)));
+            return 0;
+        }
+
+        if (g_gui->capture_recording_hotkey_) {
+            g_gui->app_->recording_config.toggle_hotkey_enabled = true;
+            g_gui->app_->recording_config.toggle_key = static_cast<int>(w_param);
+            g_gui->capture_recording_hotkey_ = false;
+            g_gui->recording_toggle_was_down_ = true;
+            g_gui->app_->statistics.log(
+                std::string("Recording toggle hotkey set to ") +
                 Input::key_name(static_cast<int>(w_param)));
             return 0;
         }

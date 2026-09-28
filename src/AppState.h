@@ -11,6 +11,8 @@
 #include "platform/Platform.h"
 #include "replay/ReplayConfig.h"
 #include "replay/ReplayEngine.h"
+#include "recording/Recorder.h"
+#include "recording/RecordingConfig.h"
 #include "stats/Statistics.h"
 
 #include <string>
@@ -18,6 +20,7 @@
 enum class Page {
     Dashboard,
     Dataset,
+    Recorder,
     Analytics,
     Settings,
     Logs
@@ -35,7 +38,9 @@ public:
     Input input;
     Platform platform;
     ReplayConfig config;
+    RecordingConfig recording_config;
     ReplayEngine replay;
+    Recorder recorder;
 
     std::string csv_path;
     Page page = Page::Dashboard;

@@ -34,6 +34,8 @@ private:
 
     bool capture_toggle_hotkey_ = false;
     bool capture_inventory_hotkey_ = false;
+    bool capture_recording_hotkey_ = false;
+    bool recording_toggle_was_down_ = false;
 
     struct ID3D11Device* device_ = nullptr;
     struct ID3D11DeviceContext* context_ = nullptr;

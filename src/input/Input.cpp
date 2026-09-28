@@ -8,6 +8,8 @@
 #define NOMINMAX
 #include "Input.h"
 
+#include <utility>
+
 namespace {
 Input* g_input = nullptr;
 }
@@ -55,6 +57,11 @@ bool Input::key_just_pressed(int vk, bool& was_down) const {
     const bool pressed = down && !was_down;
     was_down = down;
     return pressed;
+}
+
+void Input::set_mouse_down_callback(std::function<void()> callback) {
+    std::lock_guard<std::mutex> lock(callback_mutex_);
+    mouse_down_callback_ = std::move(callback);
 }
 
 const char* Input::key_name(int vk) {
@@ -112,6 +119,16 @@ LRESULT CALLBACK Input::mouse_proc(int n_code, WPARAM w_param, LPARAM l_param) {
         if ((info->flags & LLMHF_INJECTED) == 0) {
             if (w_param == WM_LBUTTONDOWN) {
                 g_input->left_button_down_.store(true, std::memory_order_relaxed);
+
+                std::function<void()> callback;
+                {
+                    std::lock_guard<std::mutex> lock(g_input->callback_mutex_);
+                    callback = g_input->mouse_down_callback_;
+                }
+
+                if (callback) {
+                    callback();
+                }
             } else if (w_param == WM_LBUTTONUP) {
                 g_input->left_button_down_.store(false, std::memory_order_relaxed);
             }
