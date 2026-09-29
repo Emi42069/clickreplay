@@ -13,6 +13,9 @@ be free.
 - "Statistics" stores interval/CPS history and logs.
 - "gui/*" contains the Dear ImGui pages and DirectX 11 setup.
 The replay engine does not include or reference "AppState". When "start()" is called, it copies the supplied "ReplayConfig". The GUI reads replay state through "ReplayEngine::snapshot()" rather than accessing individual runtime fields.
+<img width="1920" height="1002" alt="{58C20724-4B1F-43FE-8874-BCA7FA534CF7}" src="https://github.com/user-attachments/assets/905e603a-5c37-49ea-852d-607718ebf417" />
+<img width="1914" height="1000" alt="{3C6E7E1F-D590-4E8A-B77B-6E71CF90737E}" src="https://github.com/user-attachments/assets/0dcaa77a-b15c-4eb7-bb48-1ab0d7dc5086" />
+
 
 ## License
 
